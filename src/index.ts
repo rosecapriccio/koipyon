@@ -4,6 +4,11 @@ import * as Phaser from "phaser";
 
 // MySceneはもう使わないので削除
 
+interface Stage {
+  x: number;
+  type: number;
+}
+
 class MyScene extends Phaser.Scene {
   constructor() {
     // Phaser.Sceneのコンストラクタにはstringかオブジェクト（Phaser.Types.Scenes.SettingsConfig）を渡す
@@ -12,10 +17,12 @@ class MyScene extends Phaser.Scene {
   }
   private player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private WORLD_SIZE_X = 450;
-  private WORLD_SIZE_Y = 20000;
+  private WORLD_SIZE_X = 675;
+  private WORLD_SIZE_Y = 3000;
   private background: Phaser.GameObjects.TileSprite;
   private scoretext: Phaser.GameObjects.Text;
+  private _stage?: Phaser.Physics.Arcade.Group;
+  private stageinfo: Stage[] = [];
 
   preload() {
     // アセット読み込み
@@ -27,8 +34,9 @@ class MyScene extends Phaser.Scene {
       frameHeight: 32,
     });
     //地面の画像
-    this.load.image("ground", "assets/ground.png");
-    this.load.image("koito", "./assets/koitoooo.png");
+    this.load.image("stage", "assets/grounds.png");
+    this.load.image("koito", "./assets/koitogama.png");
+    this.load.image("koitore", "./assets/koitogamere.png");
   }
 
   create() {
@@ -37,12 +45,35 @@ class MyScene extends Phaser.Scene {
     //this.background = this.add.tileSprite(225, 400, 450, 800, "back");
 
     //地面の作成
-    const grounds = this.physics.add.staticGroup();
-    grounds.create(0, 0, "ground");
-    for (let i = 100; i < this.WORLD_SIZE_Y; i = i + 250) {
+    // const grounds = this.physics.add.staticGroup();
+    // grounds.create(0, 0, "ground");
+    // for (let i = 100; i < this.WORLD_SIZE_Y; i = i + 125) {
+    //   const randomValue = Math.random();
+    //   grounds.create(this.WORLD_SIZE_X * randomValue, i, "ground");
+    // }
+
+    // マップに配置する「動的」な星オブジェクトを作成
+    this._stage = this.physics.add.group({
+      key: "stage",
+      repeat: 24,
+      setXY: { x: Math.random() * this.WORLD_SIZE_X, y: 3000, stepY: -125 },
+    });
+    this._stage.children.iterate((s, index) => {
+      const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+      stage.setImmovable(true);
+      stage.body.allowGravity = false;
       const randomValue = Math.random();
-      grounds.create(300 * randomValue, i, "ground");
-    }
+      stage.x = randomValue * this.WORLD_SIZE_X;
+      console.log(index, stage.x, stage.y);
+      let stagetemp: Stage = {
+        x: stage.x,
+        type: 1,
+      };
+      this.stageinfo.push(stagetemp);
+      return true;
+    });
+
+    console.log(this.stageinfo);
 
     this.player = this.physics.add.sprite(
       this.WORLD_SIZE_X / 2,
@@ -52,29 +83,19 @@ class MyScene extends Phaser.Scene {
 
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
-    //this.player.setDisplaySize(100, 117);
-    this.player.setSize(80, 28).setOffset(38, 130);
+    this.player.setDisplaySize(141, 165);
+    this.player.setSize(140, 30).setOffset(71, 300);
     this.player.setMaxVelocity(1500);
 
-    this.physics.add.overlap(this.player, grounds); // 衝突処理を設定する
+    this.physics.add.overlap(this.player, this._stage); // 衝突処理を設定する
 
     this.anims.create({
-      key: "down",
-      frames: this.anims.generateFrameNumbers("witch", { start: 0, end: 2 }),
-      frameRate: 5,
-      repeat: -1,
-    });
-    this.anims.create({
       key: "left",
-      frames: this.anims.generateFrameNumbers("koito", { start: 0, end: 3 }),
-      frameRate: 5,
-      repeat: -1,
+      frames: "koito",
     });
     this.anims.create({
       key: "right",
-      frames: this.anims.generateFrameNumbers("koito", { start: 0, end: 3 }),
-      frameRate: 5,
-      repeat: -1,
+      frames: "koitore",
     });
 
     this.cameras.main.startFollow(this.player);
@@ -92,24 +113,44 @@ class MyScene extends Phaser.Scene {
 
   update() {
     //this.background.tilePositionY;
-    this.scoretext.text =
-      "Score: " + (this.WORLD_SIZE_Y - this.player.y).toFixed(0);
+    // this.scoretext.text =
+    //   "Score: " + (this.WORLD_SIZE_Y - this.player.y).toFixed(0);
+    this.scoretext.text = "Score: " + this.player.y.toFixed(0);
     this.scoretext.y = this.player.y - 350;
 
     var pointer = this.input.activePointer;
     if (pointer.isDown) {
       // 左移動
       if (pointer.x < this.WORLD_SIZE_X / 2) {
-        this.player.setVelocityX(-160);
+        if (this.player.body.velocity.x <= -200) {
+          this.player.setVelocityX(this.player.body.velocity.x - 5);
+        } else {
+          this.player.setVelocityX(-200);
+        }
         //this.player.anims.play("left", true);
       }
       // 右移動
       else if (this.WORLD_SIZE_X / 2 < pointer.x) {
-        this.player.setVelocityX(160);
+        if (this.player.body.velocity.x >= 200) {
+          this.player.setVelocityX(this.player.body.velocity.x + 5);
+        } else {
+          this.player.setVelocityX(200);
+        }
         //this.player.anims.play("right", true);
       }
     } else {
-      this.player.setVelocityX(0);
+      if (this.player.body.velocity.x > 0) {
+        this.player.setVelocityX(this.player.body.velocity.x - 10);
+        if (this.player.body.velocity.x < 0) {
+          this.player.setVelocityX(0);
+        }
+      } else if (this.player.body.velocity.x < 0) {
+        this.player.setVelocityX(this.player.body.velocity.x + 10);
+        if (this.player.body.velocity.x > 0) {
+          this.player.setVelocityX(0);
+        }
+      }
+      //this.player.setVelocityX(0);
     }
     // //左キーが押された時
     // if (this.cursors.left.isDown) {
@@ -126,7 +167,66 @@ class MyScene extends Phaser.Scene {
     //   this.player.setVelocityX(0);
     // }
     //上キーが押されたらジャンプ（接地しているときのみ）
-    console.log(this.player.body.angle);
+    if (this.player.y < 1000) {
+      this.player.y = 2000;
+      // let i = 23;
+      // this._stage!.children.iterate((s, index) => {
+      //   const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+      //   if (0 <= i && i < 8) {
+      //     const randomValue = Math.random();
+      //     stage.x = randomValue * this.WORLD_SIZE_X;
+      //     let stagetemp: Stage = {
+      //       x: stage.x,
+      //       type: 1,
+      //     };
+      //     this.stageinfo[i] = stagetemp;
+      //   } else if (8 <= i && i < 24) {
+      //     stage.x = this.stageinfo[i - 8].x;
+      //     this.stageinfo[i] = this.stageinfo[i - 8];
+      //   }
+      //   i--;
+      //   console.log(index, stage.x, stage.y);
+      //   return true;
+      // });
+      this._stage!.children.iterate((s, index) => {
+        const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+        if (17 <= index && index < 25) {
+          const randomValue = Math.random();
+          stage.x = randomValue * this.WORLD_SIZE_X;
+          let stagetemp: Stage = {
+            x: stage.x,
+            type: 1,
+          };
+          this.stageinfo[index] = stagetemp;
+          console.log(index, stage.x, stage.y);
+        } else if (1 <= index && index < 17) {
+          stage.x = this.stageinfo[index + 8].x;
+          this.stageinfo[index] = this.stageinfo[index + 8];
+          console.log(index, stage.x, stage.y);
+        }
+        //console.log(index, stage.x, stage.y);
+        return true;
+      });
+      // this._stage!.children.iterate((s, index) => {
+      //   const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+      //   if (0 <= index && index < 8) {
+      //     const randomValue = Math.random();
+      //     stage.x = randomValue * this.WORLD_SIZE_X;
+      //     let stagetemp: Stage = {
+      //       x: stage.x,
+      //       type: 1,
+      //     };
+      //     this.stageinfo[index] = stagetemp;
+      //     console.log(index, stage.x, stage.y);
+      //   } else if (8 <= index && index < 24) {
+      //   }
+      //   //console.log(index, stage.x, stage.y);
+      //   return true;
+      // });
+      console.log(this.stageinfo);
+    }
+
+    //console.log(this.player.body.y);
     if (this.player.body.touching.down && this.player.body.angle > 0) {
       this.player.setVelocityY(-750);
     } else {
@@ -137,13 +237,13 @@ class MyScene extends Phaser.Scene {
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 450,
-  height: 800,
+  width: 675,
+  height: 1200,
   backgroundColor: "#add8e6", // 背景色
   render: {
     //pixelArt: true,
-    antialias: true,
-    antialiasGL: true,
+    //antialias: true,
+    //antialiasGL: true,
   },
   scale: {
     mode: Phaser.Scale.FIT,
