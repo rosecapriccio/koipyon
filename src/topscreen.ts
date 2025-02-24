@@ -2,6 +2,7 @@ export class topscreen extends Phaser.Scene {
   constructor() {
     super("topscreen");
   }
+  private mode2 = false;
   preload() {
     // アセット読み込み
     //this.load.image("candy", "assets/sweets_candy.png");
@@ -11,6 +12,8 @@ export class topscreen extends Phaser.Scene {
     this.load.image("button02", "./assets/bptann02.png");
   }
   create() {
+    this.mode2 = false;
+    console.log(this.mode2);
     this.cameras.main.fadeIn(1000, 0, 0, 0);
     this.cameras.main.setBackgroundColor("#fffaf0");
     //this.add.text(400, 300, "だめだよ").setOrigin(0.5, 0.5).setFontSize(30);
@@ -25,11 +28,19 @@ export class topscreen extends Phaser.Scene {
     const zone2 = this.add.zone(width / 2, height / 2 + 420, 400, 80);
     const zone3 = this.add.zone(width / 2 + 10, height / 2 - 30, 180, 240);
 
-    //this.add.rectangle(width / 2, height / 2 + 270, 400, 80, 0x6495ed);
+    const zone4 = this.add.zone(100, 100, 100, 100);
+    this.add.rectangle(100, 100, 100, 100, 0x6495ed);
+
     //this.add.rectangle(width / 2, height / 2 + 420, 400, 80, 0x6495ed);
     this.add.image(width / 2, height / 2 + 270, "button01");
     this.add.image(width / 2, height / 2 + 420, "button02");
     //this.add.rectangle(width / 2 + 10, height / 2 - 30, 180, 240, 0x6495ed);
+
+    this.add
+      .text(570, 40, "Ver.1.0.0")
+      .setOrigin(0.5, 0.5)
+      .setFontSize(30)
+      .setFill("000000");
 
     // this.add
     //   .text(width / 2, height / 2 + 270, "スタート")
@@ -55,6 +66,11 @@ export class topscreen extends Phaser.Scene {
       useHandCursor: true, // マウスオーバーでカーソルが指マークになる
     });
 
+    // Zoneをクリックできるように設定
+    zone4.setInteractive({
+      useHandCursor: true, // マウスオーバーでカーソルが指マークになる
+    });
+
     // ZoneをクリックしたらMainSceneに遷移
     // zone.on("pointerdown", () => {
     //   this.scene.start("myscene");
@@ -67,13 +83,14 @@ export class topscreen extends Phaser.Scene {
       this.cameras.main.once(
         Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
         () => {
-          this.scene.start("myscene");
+          const data = { mode: this.mode2 };
+          console.log(data);
+          this.scene.start("myscene", data);
         }
       );
     });
 
     zone2.on("pointerdown", () => {
-      console.log("howto");
       zone2.removeInteractive();
       this.cameras.main.fadeOut(1200, 0, 0, 0);
       // このシーンが完全にフェードアウトしてから次のシーンをstartする
@@ -97,7 +114,7 @@ export class topscreen extends Phaser.Scene {
       } else {
         chat = "ぴぇ...";
       }
-      console.log("howto");
+      this.mode2 = true;
       //zone3.removeInteractive();
       const fukidashi1 = this.add.image(150, 460, "fukidashi");
       fukidashi1.setDisplaySize(200, 160);
@@ -106,6 +123,18 @@ export class topscreen extends Phaser.Scene {
         .setOrigin(0.5, 0.5)
         .setFontSize(24)
         .setFill("000000");
+    });
+
+    zone4.on("pointerdown", () => {
+      zone4.removeInteractive();
+      this.cameras.main.fadeOut(1200, 0, 0, 0);
+      // このシーンが完全にフェードアウトしてから次のシーンをstartする
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        () => {
+          this.scene.start("myscene2");
+        }
+      );
     });
   }
 }

@@ -6,6 +6,7 @@ export class howto extends Phaser.Scene {
   preload() {
     // アセット読み込み
     this.load.image("button03", "./assets/bptann03.png");
+    this.load.image("howtokoito", "./assets/howto.png");
   }
 
   create() {
@@ -21,9 +22,12 @@ export class howto extends Phaser.Scene {
       .setFontSize(50)
       .setFill("000000");
 
-    const zone = this.add.zone(width / 2, 1020, 400, 100);
+    const candy1 = this.add.image(width / 2, 550, "howtokoito");
+    candy1.setDisplaySize(528, 770);
+
+    const zone = this.add.zone(width / 2, 1030, 400, 100);
     //this.add.rectangle(width / 2, 1020, 400, 100, 0xff0000);
-    this.add.image(width / 2, 1020, "button03");
+    this.add.image(width / 2, 1030, "button03");
     // Zoneをクリックできるように設定
     zone.setInteractive({
       useHandCursor: true, // マウスオーバーでカーソルが指マークになる

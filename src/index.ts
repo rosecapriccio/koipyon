@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { topscreen } from "./topscreen";
 import { gameover } from "./gameover";
+import { MyScene2 } from "./index2";
 import { howto } from "./howto";
 
 //import { Scenes } from "./scene"; // 追加
@@ -14,6 +15,7 @@ interface Stage {
 }
 
 let txt = "Hello";
+let hardmode = false;
 
 export class MyScene extends Phaser.Scene {
   constructor() {
@@ -38,10 +40,14 @@ export class MyScene extends Phaser.Scene {
   private isRotated = false;
   private isFollowedCamera = false;
   private stagevelox = 30;
+  private isLeft = true;
 
   private cloud1: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cloud2: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cloud3: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private cloud1count: number;
+  private cloud2count: number;
+  private cloud3count: number;
 
   preload() {
     // アセット読み込み
@@ -49,6 +55,10 @@ export class MyScene extends Phaser.Scene {
 
     //魔法使い
     this.load.spritesheet("koitoga", "assets/koitoga.png", {
+      frameWidth: 282,
+      frameHeight: 330,
+    });
+    this.load.spritesheet("koitoall", "assets/koitoall.png", {
       frameWidth: 282,
       frameHeight: 330,
     });
@@ -68,6 +78,7 @@ export class MyScene extends Phaser.Scene {
   }
 
   create() {
+    hardmode = false;
     //this.cameras.main.fadeIn(1000, 0, 0, 0);
 
     // 画面中央に画像とテキストを配置
@@ -129,6 +140,12 @@ export class MyScene extends Phaser.Scene {
     //   this._stage.add(stage);
     // }
 
+    if (hardmode) {
+      this.stagevelox = 300;
+    } else {
+      this.stagevelox = 30;
+    }
+
     this.stageinfo.splice(0);
     this._stage.children.iterate((s, index) => {
       const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
@@ -143,7 +160,7 @@ export class MyScene extends Phaser.Scene {
       //console.log(index, stage.x, stage.y);
       let stagetemp: Stage = {
         x: stage.x,
-        type: Math.floor(Math.random() * this.STAGE_TYPE) + 1,
+        type: getStageType(0, this.STAGE_TYPE),
         velox: 0,
       };
       this.stageinfo.push(stagetemp);
@@ -151,7 +168,7 @@ export class MyScene extends Phaser.Scene {
         stage.setVelocityX(this.stagevelox);
         this.stageinfo[index].velox = stage.body.velocity.x;
       }
-      console.log("stage" + this.stageinfo[index].type.toString());
+      //console.log("stage" + this.stageinfo[index].type.toString());
       stage.anims.play("stage" + this.stageinfo[index].type.toString(), true);
       return true;
     });
@@ -161,7 +178,7 @@ export class MyScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(
       this.WORLD_SIZE_X / 2,
       this.WORLD_SIZE_Y - 2000,
-      "koitoga"
+      "koitoall"
     );
 
     this.player.setBounce(0.2);
@@ -174,13 +191,25 @@ export class MyScene extends Phaser.Scene {
 
     this.anims.create({
       key: "left",
-      frames: this.anims.generateFrameNumbers("koitoga", { start: 0, end: 0 }),
+      frames: this.anims.generateFrameNumbers("koitoall", { start: 0, end: 0 }),
       frameRate: 5,
       repeat: -1,
     });
     this.anims.create({
       key: "right",
-      frames: this.anims.generateFrameNumbers("koitoga", { start: 1, end: 1 }),
+      frames: this.anims.generateFrameNumbers("koitoall", { start: 2, end: 2 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: "leftup",
+      frames: this.anims.generateFrameNumbers("koitoall", { start: 1, end: 1 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: "rightup",
+      frames: this.anims.generateFrameNumbers("koitoall", { start: 3, end: 3 }),
       frameRate: 5,
       repeat: -1,
     });
@@ -218,7 +247,11 @@ export class MyScene extends Phaser.Scene {
     this.score = 0;
     this.loop = 0;
     this.blinkcount = 0;
-    this.stagevelox = 30;
+
+    this.isLeft = true;
+    this.cloud1count = 0;
+    this.cloud2count = 0;
+    this.cloud3count = 0;
   }
 
   update() {
@@ -234,12 +267,22 @@ export class MyScene extends Phaser.Scene {
       this.scoretext.text = "Score: " + this.score.toFixed(0);
       this.scoretext.y = this.player.y - this.SCORETEXT_OFFSET_Y;
 
-      this.cloud1.y = this.player.y - 150 + this.score / 5;
-      this.cloud2.y = this.player.y - 600 + this.score / 5;
-      this.cloud3.y = this.player.y + 300 + this.score / 5;
+      this.cloud1.y = this.player.y - 150 + (this.score - this.cloud1count) / 5;
+      this.cloud2.y = this.player.y - 600 + (this.score - this.cloud2count) / 5;
+      this.cloud3.y = this.player.y + 300 + (this.score - this.cloud3count) / 5;
     }
 
-    console.log(this.player.body.velocity.y);
+    if (this.cloud1.y > this.player.y + 800) {
+      this.cloud1count = this.score + 3500 - 750;
+    }
+    if (this.cloud2.y > this.player.y + 800) {
+      this.cloud2count = this.score + 3500 - 3000;
+    }
+    if (this.cloud3.y > this.player.y + 800) {
+      this.cloud3count = this.score + 3500 + 1500;
+    }
+
+    //console.log(this.player.body.velocity.y);
     if (this.player.body.velocity.y > 1250) {
       this.cameras.main.stopFollow();
       this.player.setCollideWorldBounds(false);
@@ -264,39 +307,59 @@ export class MyScene extends Phaser.Scene {
     // this.scoretext.text =
     //   "Score: " + (this.WORLD_SIZE_Y - this.player.y).toFixed(0);
 
-    if (this.score >= 5000 && this.score < 10000) {
+    if (this.score >= 10000 && this.score < 15000) {
       this.stagevelox = 60;
-    } else if (this.score >= 10000 && this.score < 15000) {
-      this.stagevelox = 90;
     } else if (this.score >= 15000 && this.score < 20000) {
-      this.stagevelox = 120;
+      this.stagevelox = 90;
     } else if (this.score >= 20000 && this.score < 25000) {
-      this.stagevelox = 150;
+      this.stagevelox = 120;
     } else if (this.score >= 25000 && this.score < 30000) {
+      this.stagevelox = 150;
+    } else if (this.score >= 30000 && this.score < 35000) {
       this.stagevelox = 180;
-    } else if (this.score >= 30000) {
+    } else if (this.score >= 35000 && this.score < 40000) {
       this.stagevelox = 210;
+    } else if (this.score >= 40000 && this.score < 45000) {
+      this.stagevelox = 240;
+    } else if (this.score >= 45000) {
+      this.stagevelox = 270;
+    }
+
+    if (hardmode) {
+      this.stagevelox = 300;
     }
 
     var pointer = this.input.activePointer;
-    if (pointer.isDown) {
+    if (
+      pointer.isDown ||
+      this.cursors.left.isDown ||
+      this.cursors.right.isDown
+    ) {
       // 左移動
-      if (pointer.x < this.WORLD_SIZE_X / 2) {
+      if (
+        (pointer.isDown && pointer.x < this.WORLD_SIZE_X / 2) ||
+        this.cursors.left.isDown
+      ) {
         if (this.player.body.velocity.x <= -200) {
           this.player.setVelocityX(this.player.body.velocity.x - 5);
         } else {
           this.player.setVelocityX(-200);
         }
-        this.player.anims.play("left", true);
+        this.isLeft = true;
+        //this.player.anims.play("left", true);
       }
       // 右移動
-      else if (this.WORLD_SIZE_X / 2 < pointer.x) {
+      else if (
+        (pointer.isDown && this.WORLD_SIZE_X / 2 < pointer.x) ||
+        this.cursors.right.isDown
+      ) {
         if (this.player.body.velocity.x >= 200) {
           this.player.setVelocityX(this.player.body.velocity.x + 5);
         } else {
           this.player.setVelocityX(200);
         }
-        this.player.anims.play("right", true);
+        this.isLeft = false;
+        //this.player.anims.play("right", true);
       }
     } else {
       if (this.player.body.velocity.x > 0) {
@@ -312,23 +375,40 @@ export class MyScene extends Phaser.Scene {
       }
       //this.player.setVelocityX(0);
     }
-    // 左右のキーに合わせて移動
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-200);
-      this.player.anims.play("left", true);
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(200);
-      this.player.anims.play("right", true);
+    // // 左右のキーに合わせて移動
+    // if (this.cursors.left.isDown) {
+    //   this.player.setVelocityX(-200);
+    //   this.isLeft = true;
+    //   //this.player.anims.play("left", true);
+    // } else if (this.cursors.right.isDown) {
+    //   this.player.setVelocityX(200);
+    //   this.isLeft = false;
+    //   //this.player.anims.play("right", true);
+    // }
+    // console.log(this.player.anims.getFrameName(), this.player.body.velocity.y);
+
+    if (this.player.body.velocity.y < -0) {
+      if (this.isLeft) {
+        this.player.anims.play("leftup", true);
+      } else {
+        this.player.anims.play("rightup", true);
+      }
+    } else {
+      if (this.isLeft) {
+        this.player.anims.play("left", true);
+      } else {
+        this.player.anims.play("right", true);
+      }
     }
 
     this._stage!.children.iterate((s, index) => {
       const stage = s as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
       if (this.stageinfo[index].type == 2) {
         //console.log(index, this.stageinfo[index].type);
-        if (stage.x > 575) {
+        if (stage.x > this.WORLD_SIZE_X) {
           stage.setVelocityX(-this.stagevelox);
           this.stageinfo[index].velox = stage.body.velocity.x;
-        } else if (stage.x < 100) {
+        } else if (stage.x < 0) {
           stage.setVelocityX(this.stagevelox);
           this.stageinfo[index].velox = stage.body.velocity.x;
         }
@@ -402,7 +482,7 @@ export class MyScene extends Phaser.Scene {
           stage.x = randomValue * this.WORLD_SIZE_X;
           let stagetemp: Stage = {
             x: stage.x,
-            type: Math.floor(Math.random() * this.STAGE_TYPE) + 1,
+            type: getStageType(this.score, this.STAGE_TYPE),
             velox: 0,
           };
           this.stageinfo[index] = stagetemp;
@@ -508,10 +588,75 @@ const config: Phaser.Types.Core.GameConfig = {
     default: "arcade", // ここでarcadeを指定します。
     arcade: {
       gravity: { x: 0, y: 600 }, // y:重力
-      debug: false, // true にすることで衝突検知の範囲を画面に表示します。
+      debug: true, // true にすることで衝突検知の範囲を画面に表示します。
     },
   },
-  scene: [topscreen, howto, MyScene, gameover],
+  scene: [topscreen, howto, MyScene, MyScene2, gameover],
+};
+
+// 1:normal 2:move 3:blink 4:broken 5:spring
+export const getStageType = (score: number, typenum: number): number => {
+  let result = 0;
+  let probability = Math.random();
+  if (score == 0) {
+    result = 1;
+  } else if (score < 7000) {
+    if (probability < 0.8) {
+      result = 1;
+    } else {
+      result = 5;
+    }
+  } else if (score < 15000) {
+    if (probability < 0.6) {
+      result = 1;
+    } else if (probability < 0.9) {
+      result = 2;
+    } else {
+      result = 5;
+    }
+  } else if (score < 22500) {
+    if (probability < 0.5) {
+      result = 1;
+    } else if (probability < 0.7) {
+      result = 2;
+    } else if (probability < 0.9) {
+      result = 4;
+    } else {
+      result = 5;
+    }
+  } else if (score < 30000) {
+    result = Math.floor(Math.random() * typenum) + 1;
+  } else if (score < 40000) {
+    if (probability < 0.25) {
+      result = 1;
+    } else if (probability < 0.5) {
+      result = 2;
+    } else if (probability < 0.75) {
+      result = 3;
+    } else {
+      result = 4;
+    }
+  } else {
+    if (probability < 0.33) {
+      result = 2;
+    } else if (probability < 0.66) {
+      result = 3;
+    } else {
+      result = 4;
+    }
+  }
+
+  if (hardmode) {
+    if (probability < 0.5) {
+      result = 2;
+    } else if (probability < 0.75) {
+      result = 3;
+    } else {
+      result = 4;
+    }
+  }
+
+  return result;
 };
 
 export default txt; //これが必要になります

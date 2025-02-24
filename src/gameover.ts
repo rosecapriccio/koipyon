@@ -1,5 +1,4 @@
 import { MyScene } from "./index";
-import txt from "./index";
 
 export class gameover extends Phaser.Scene {
   constructor() {
