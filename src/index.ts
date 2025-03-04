@@ -222,7 +222,7 @@ export class MyScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, this.WORLD_SIZE_X, this.WORLD_SIZE_Y);
 
     this.scoretext = this.add.text(12, 12, "Score: 0", {
-      font: "24px",
+      font: "32px",
     });
 
     //const cloud = this.add.image(200, 300, "cloud");
@@ -264,7 +264,7 @@ export class MyScene extends Phaser.Scene {
     if (this.isFollowedCamera) {
       this.score = this.WORLD_SIZE_Y - this.player.y + 1000 * this.loop - 1900;
       if (this.score < 0) this.score = 0;
-      this.scoretext.text = "Score: " + this.score.toFixed(0);
+      this.scoretext.text = "Score: " + (this.score / 10).toFixed(0);
       this.scoretext.y = this.player.y - this.SCORETEXT_OFFSET_Y;
 
       this.cloud1.y = this.player.y - 150 + (this.score - this.cloud1count) / 5;
@@ -588,7 +588,7 @@ const config: Phaser.Types.Core.GameConfig = {
     default: "arcade", // ここでarcadeを指定します。
     arcade: {
       gravity: { x: 0, y: 600 }, // y:重力
-      debug: true, // true にすることで衝突検知の範囲を画面に表示します。
+      debug: false, // true にすることで衝突検知の範囲を画面に表示します。
     },
   },
   scene: [topscreen, howto, MyScene, MyScene2, gameover],

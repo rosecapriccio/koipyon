@@ -7,6 +7,7 @@ export class howto extends Phaser.Scene {
     // アセット読み込み
     this.load.image("button03", "./assets/bptann03.png");
     this.load.image("howtokoito", "./assets/howto.png");
+    this.load.image("asobi", "./assets/asobi.png");
   }
 
   create() {
@@ -16,11 +17,12 @@ export class howto extends Phaser.Scene {
     const { width, height } = this.game.canvas;
     // 画面を埋めるようなZoneを作成
 
-    this.add
-      .text(width / 2, 80, "遊び方")
-      .setOrigin(0.5, 0.5)
-      .setFontSize(50)
-      .setFill("000000");
+    this.add.image(width / 2 - 5, 100, "asobi");
+    // this.add
+    //   .text(width / 2, 80, "遊び方")
+    //   .setOrigin(0.5, 0.5)
+    //   .setFontSize(50)
+    //   .setFill("000000");
 
     const candy1 = this.add.image(width / 2, 550, "howtokoito");
     candy1.setDisplaySize(528, 770);

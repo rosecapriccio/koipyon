@@ -12,6 +12,7 @@ export class gameover extends Phaser.Scene {
     //this.load.image("candy", "assets/sweets_candy.png");
     this.load.image("koitofall", "./assets/koitofall.png");
     this.load.image("button03", "./assets/bptann03.png");
+    this.load.image("gover", "./assets/gameover.png");
   }
   create(data: any) {
     //this.cameras.main.fadeIn(1000, 0, 0, 0);
@@ -20,7 +21,7 @@ export class gameover extends Phaser.Scene {
     const { width, height } = this.game.canvas;
     // 画面を埋めるようなZoneを作成
 
-    const candy1 = this.add.image(width / 2 - 30, 470, "koitofall");
+    const candy1 = this.add.image(width / 2 - 30, 480, "koitofall");
     candy1.setDisplaySize(680, 965);
 
     this.scene1 = this.scene.get("MyScene") as MyScene;
@@ -37,20 +38,23 @@ export class gameover extends Phaser.Scene {
       result = "はなまる";
     }
 
-    this.add
-      .text(width / 2, 80, "ゲームオーバー")
-      .setOrigin(0.5, 0.5)
-      .setFontSize(50)
-      .setFill("000000");
+    // this.add
+    //   .text(width / 2, 80, "ゲームオーバー")
+    //   .setOrigin(0.5, 0.5)
+    //   .setFontSize(50)
+    //   .setFill("000000");
+
+    this.add.image(width / 2, 70, "gover");
+    //.setDisplaySize(680, 965);
 
     this.add
-      .text(width / 2, 920, "" + result + "プロデューサーさんですね！")
+      .text(width / 2, 930, "" + result + "プロデューサーさんですね！")
       .setOrigin(0.5, 0.5)
       .setFontSize(35)
       .setFill("000000");
 
     this.scoretext = this.add
-      .text(width / 2, 860, "Score: " + data.score.toFixed(0) + " mm")
+      .text(width / 2, 870, "Score: " + (data.score / 10).toFixed(0) + " mm")
       .setOrigin(0.5, 0.5)
       .setFontSize(50)
       .setFill("000000");

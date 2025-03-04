@@ -3,6 +3,7 @@ export class topscreen extends Phaser.Scene {
     super("topscreen");
   }
   private mode2 = false;
+  private count = 0;
   preload() {
     // アセット読み込み
     //this.load.image("candy", "assets/sweets_candy.png");
@@ -10,8 +11,10 @@ export class topscreen extends Phaser.Scene {
     this.load.image("fukidashi", "./assets/fukidashi.png");
     this.load.image("button01", "./assets/bptann01.png");
     this.load.image("button02", "./assets/bptann02.png");
+    this.load.image("angry", "./assets/angry.png");
   }
   create() {
+    this.count = 0;
     this.mode2 = false;
     console.log(this.mode2);
     this.cameras.main.fadeIn(1000, 0, 0, 0);
@@ -28,8 +31,8 @@ export class topscreen extends Phaser.Scene {
     const zone2 = this.add.zone(width / 2, height / 2 + 420, 400, 80);
     const zone3 = this.add.zone(width / 2 + 10, height / 2 - 30, 180, 240);
 
-    const zone4 = this.add.zone(100, 100, 100, 100);
-    this.add.rectangle(100, 100, 100, 100, 0x6495ed);
+    const zone4 = this.add.zone(150, 450, 100, 100);
+    //this.add.rectangle(150, 450, 100, 100, 0x6495ed);
 
     //this.add.rectangle(width / 2, height / 2 + 420, 400, 80, 0x6495ed);
     this.add.image(width / 2, height / 2 + 270, "button01");
@@ -67,9 +70,6 @@ export class topscreen extends Phaser.Scene {
     });
 
     // Zoneをクリックできるように設定
-    zone4.setInteractive({
-      useHandCursor: true, // マウスオーバーでカーソルが指マークになる
-    });
 
     // ZoneをクリックしたらMainSceneに遷移
     // zone.on("pointerdown", () => {
@@ -104,20 +104,31 @@ export class topscreen extends Phaser.Scene {
 
     zone3.on("pointerdown", () => {
       let chat = "";
-      let res = Math.random();
-      if (res > 0.75) {
-        chat = "ぴゃっ";
-      } else if (res > 0.5) {
-        chat = "だめだよ";
-      } else if (res > 0.25) {
-        chat = "えっへん";
-      } else {
-        chat = "ぴぇ...";
-      }
       this.mode2 = true;
+
       //zone3.removeInteractive();
       const fukidashi1 = this.add.image(150, 460, "fukidashi");
       fukidashi1.setDisplaySize(200, 160);
+
+      if (this.count++ < 20) {
+        let res = Math.random();
+        if (res > 0.75) {
+          chat = "ぴゃっ";
+        } else if (res > 0.5) {
+          chat = "だめだよ";
+        } else if (res > 0.25) {
+          chat = "えっへん";
+        } else {
+          chat = "ぴぇ...";
+        }
+      } else {
+        chat = "";
+        zone4.setInteractive({
+          useHandCursor: true, // マウスオーバーでカーソルが指マークになる
+        });
+        this.add.image(150, 450, "angry").setDisplaySize(90, 90);
+      }
+
       this.add
         .text(150, 455, chat)
         .setOrigin(0.5, 0.5)
