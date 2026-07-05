@@ -3,10 +3,7 @@ import { topscreen } from "./topscreen";
 import { gameover } from "./gameover";
 import { MyScene2 } from "./index2";
 import { howto } from "./howto";
-
-//import { Scenes } from "./scene"; // 追加
-
-// MySceneはもう使わないので削除
+import { rankingscene } from "./rankingscene";
 
 interface Stage {
   x: number;
@@ -178,7 +175,7 @@ export class MyScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(
       this.WORLD_SIZE_X / 2,
       this.WORLD_SIZE_Y - 2000,
-      "koitoall"
+      "koitoall",
     );
 
     this.player.setBounce(0.2);
@@ -494,7 +491,7 @@ export class MyScene extends Phaser.Scene {
           }
           stage.anims.play(
             "stage" + this.stageinfo[index].type.toString(),
-            true
+            true,
           );
           //console.log(index, stage.x, stage.y);
         } else if (1 <= index && index < 17) {
@@ -508,7 +505,7 @@ export class MyScene extends Phaser.Scene {
           }
           stage.anims.play(
             "stage" + this.stageinfo[index].type.toString(),
-            true
+            true,
           );
           //console.log(index, stage.x, stage.y);
         }
@@ -582,6 +579,9 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
   },
+  dom: {
+    createContainer: true,
+  },
   //resolution: window.devicePixelRatio,
   parent: "game-app",
   physics: {
@@ -591,7 +591,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false, // true にすることで衝突検知の範囲を画面に表示します。
     },
   },
-  scene: [topscreen, howto, MyScene, MyScene2, gameover],
+  scene: [topscreen, howto, MyScene, MyScene2, gameover, rankingscene],
 };
 
 // 1:normal 2:move 3:blink 4:broken 5:spring
@@ -659,6 +659,6 @@ export const getStageType = (score: number, typenum: number): number => {
   return result;
 };
 
-export default txt; //これが必要になります
+export default txt;
 
 new Phaser.Game(config);
