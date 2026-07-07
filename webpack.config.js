@@ -25,7 +25,9 @@ const config = {
       template: "src/index.html",
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: "src/assets/", to: "assets/" }],
+      patterns: [
+        { from: "src/assets/", to: "assets/", noErrorOnMissing: true },
+      ],
     }),
     new Dotenv({
       systemvars: true, // 👈 これを入れることでGitHubの環境変数も安全に読み込めます
