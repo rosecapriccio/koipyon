@@ -140,11 +140,11 @@ export class gameover extends Phaser.Scene {
     // });
 
     const checkRankIn = async () => {
-      const topScores = await getTopScores(20);
+      const topScores = await getTopScores(15);
 
       // まだデータが20件ない場合、または今回のスコアが20位のスコア以上の場合
       const isRankIn =
-        topScores.length < 20 ||
+        topScores.length < 15 ||
         data.score >= (topScores[topScores.length - 1] as any).score;
 
       if (isRankIn) {
