@@ -30,11 +30,9 @@ jobs:
         with:
           node-version: '20'
 
-      # 互換性エラーを防ぐため、固定の ci ではなく通常の install を使います
       - name: Install dependencies
         run: npm install
 
-      # dotenv-webpackが参照する本物の「.env」ファイルをGitHub Secretsからスマートに生成
       - name: Create .env file
         run: |
           echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
@@ -47,7 +45,7 @@ jobs:
       - name: Build project
         run: npx webpack --mode production
 
-        - name: Create redirect for old URL
+      - name: Create redirect for old URL
         run: |
           mkdir -p ./dist/dist
           echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=https://rosecapriccio.github.io/koipyon/"><title>移動中...</title></head><body><p>移動中... <a href="https://rosecapriccio.github.io/koipyon/">こちら</a></p></body></html>' > ./dist/dist/index.html
