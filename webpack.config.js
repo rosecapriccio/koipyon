@@ -2,32 +2,10 @@ const webpack = require("webpack");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const fs = require("fs");
-
-const envPath = path.resolve(__dirname, ".env");
-const envVars = {};
-
-if (fs.existsSync(envPath)) {
-  const envConfig = fs.readFileSync(envPath, "utf-8");
-  envConfig.split("\n").forEach((line) => {
-    const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-    if (match) {
-      const key = match[1];
-      let value = match[2] || "";
-      if (
-        value.length > 0 &&
-        value.charAt(0) === '"' &&
-        value.charAt(value.length - 1) === '"'
-      ) {
-        value = value.replace(/^"|年会$/, "");
-      }
-      envVars[`process.env.${key}`] = JSON.stringify(value.trim());
-    }
-  });
-}
+const Dotenv = require("dotenv-webpack"); // 👈 安全に.envを読み込むプラグイン
 
 const config = {
-  mode: "development",
+  mode: "development", // deploy.yml側の --mode production で本番用に上書きされます
   entry: "./src/index.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -49,7 +27,9 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [{ from: "src/assets/", to: "assets/" }],
     }),
-    new webpack.DefinePlugin(envVars),
+    new Dotenv({
+      systemvars: true, // 👈 これを入れることでGitHubの環境変数も安全に読み込めます
+    }),
   ],
   resolve: {
     extensions: [".ts", ".js"],
