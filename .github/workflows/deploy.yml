@@ -3,8 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # masterブランチをお使いの場合は master に書き換えてください
-  workflow_dispatch: # 手動実行ボタンも一応残しておきます
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -44,9 +44,13 @@ jobs:
           echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env
           echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
 
-      # Webpackでのビルドを実行（distフォルダが生成されます）
       - name: Build project
         run: npx webpack --mode production
+
+        - name: Create redirect for old URL
+        run: |
+          mkdir -p ./dist/dist
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=https://rosecapriccio.github.io/koipyon/"><title>移動中...</title></head><body><p>移動中... <a href="https://rosecapriccio.github.io/koipyon/">こちら</a></p></body></html>' > ./dist/dist/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
